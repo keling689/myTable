@@ -1,0 +1,477 @@
+<!DOCTYPE html>
+<html>
+
+	<head>
+		<meta charset="UTF-8">
+		<title>调度方案</title>
+		<link rel="stylesheet" type="text/css" href="css/common.css" />
+		<link rel="stylesheet" type="text/css" href="css/mystyle.css" />
+		<link rel="stylesheet" href="css/newDiaodu.css" />
+		<script type="text/javascript" src="js/jquery-1.8.3.min.js"></script>
+		<script type="text/javascript" src="js/common.js"></script>
+	</head>
+
+	<body>
+		<div id="content-table" style="padding:20px">
+		
+				</div>
+		<script>
+		var eid;
+			//获取时间
+			function formatDate(date) {
+				return date.getFullYear() + "-" + ((date.getMonth() + 1) > 9 ? (date.getMonth() + 1) : ('0' + (date.getMonth() + 1))) + "-" + date.getDate();
+			}
+//			$(function() {
+//				var now = new Date();
+//				var myDate = formatDate(now);
+//				$("#nowTime").html(myDate);
+				//				planData({'date':myDate});
+//			});
+
+			function selectScheduleExtByDate() {
+				var asyncUrl = "/selectScheduleExtByDate.htm";
+				$.ajax({
+					type: "GET",
+					url: asyncUrl,
+					contentType: 'application/json;charset=utf-8',
+					dataType: 'json',
+					//数据格式是json串
+					data: {
+						date: formatDate(new Date())
+					},
+					success: function(res) {
+						console.log(res)
+						diaoduTable = new InitTable(res.data)
+					},
+					error: function(jqXHR) {
+						alert("发生错误：" + jqXHR.status);
+						var falseData = {"code":0,"description":"返回失败","status":0,"data":{"tyStime1":"11:00","tyStime2":"12:00","tyStime3":"17:00","tyStime4":"21:50","tyStime5":"00:00","tyStime6":"07:50","tyEtime1":"12:00","tyEtime2":"17:00","tyEtime3":"21:50","tyEtime4":"00:00","tyEtime5":"07:50","tyEtime6":"11:00","tyDuration1":1,"tyDuration2":5,"tyDuration3":4.83,"tyDuration4":2.17,"tyDuration5":7.83,"tyDuration6":3.17,"tyWaterSecond1":40,"tyWaterSecond2":40,"tyWaterSecond3":40,"tyWaterSecond4":96,"tyWaterSecond5":96,"tyWaterSecond6":40,"tyWaterPlan1":14,"tyWaterPlan2":72,"tyWaterPlan3":69,"tyWaterPlan4":74,"tyWaterPlan5":270,"tyWaterPlan6":45,"tyWaterYield":547,"tyWaterYieldPre":550.27,"tyYesterdayWater":546.33,"szPreWaterLevel":26.49,"ytPreWaterLevel":47.84,"szPreWaterKr":2852.14,"ytPreWaterKr":629.17}}
+						diaoduTable = new InitTable(falseData.data)
+					}
+				});
+			}
+			selectScheduleExtByDate();
+
+//表格构造函数
+			function InitTable(serverData) {
+				this.receiveData = serverData;
+				this.$contentTable = $("#content-table");
+//				初始化表单数据
+				this.formData = {
+					idxDate: '', //时间
+					tyWaterYield: '', //太园泵站抽水量
+					tyWaterYieldAdj: '', //太园泵站调整值
+					tyWaterYieldPre: '', //太园泵站预测需水量
+					tyMaxFlow: '', //太园泵站最大抽水流量
+					tyMinFlow: '', //太园泵站最小抽水流量
+					ytYesterdayWater: '', //昨日雁田水库出水量
+					tyYesterdayWater: '', //昨日系统供水量
+					szObjWaterLevel: '', //深圳水库目标水位
+					ytObjWaterLevel: '', //雁田水库目标水位
+					szPreWaterLevel: '', //深圳水库预测水位
+					ytPreWaterLevel: '', //雁田水库预测水位
+					szObjWaterKr: '', //深圳水库目标库容
+					ytObjWaterKr: '', //雁田水库目标库容
+					szPreWaterKr: '', //深圳水库预测库容
+					ytPreWaterKr: '', //雁田水库预测库容
+					ytKrDifference: '', //雁田水库库容差
+					szKrDifference: '', //深圳水库库容差
+					damageByWater: '', //水损系数
+					dayPlanWater: '', //日	
+					period1: '', // 上浦雁田抽水时段1
+					period2: '', //上浦雁田抽水时段2
+					period3: '', //上浦雁田抽水时段3
+					period4: '', //上浦雁田抽水时段4
+					waterFlow1: '', //上浦雁田抽水流量1
+					waterFlow2: '', //上浦雁田抽水流量2
+					duration1: '', //上浦雁田抽水时长1
+					duration2: '', //上浦雁田抽水时长2
+					waterYield1: '', //上浦雁田抽水量1
+					waterYield2: '', //上浦雁田抽水量2
+					shOpenPlan: '', //生化站开机安排
+					xkhStatus: '', //新开河橡胶坝状况
+					dispatchMode: '', //调度方式
+					runModeAdj: '', //运行方式调整情况
+					remark: '' //备注  
+				};
+//				初始化table数据
+				this.tableData = {
+						"tyStime1": "11:00",
+						"tyStime2": "12:00",
+						"tyStime3": "17:00",
+						"tyStime4": "20:50",
+						"tyStime5": "00:00",
+						"tyStime6": "07:50",
+						"tyEtime1": "12:00",
+						"tyEtime2": "17:00",
+						"tyEtime3": "20:50",
+						"tyEtime4": "00:00",
+						"tyEtime5": "07:50",
+						"tyEtime6": "11:00",
+						"tyDuration1": 1,
+						"tyDuration2": 5,
+						"tyDuration3": 3.83,
+						"tyDuration4": 3.17,
+						"tyDuration5": 7.83,
+						"tyDuration6": 3.17,
+						"tyWaterSecond1": 40,
+						"tyWaterSecond2": 40,
+						"tyWaterSecond3": 40,
+						"tyWaterSecond4": 96,
+						"tyWaterSecond5": 96,
+						"tyWaterSecond6": 40,
+						"tyWaterPlan1": 14,
+						"tyWaterPlan2": 72,
+						"tyWaterPlan3": 55,
+						"tyWaterPlan4": 109,
+						"tyWaterPlan5": 270,
+						"tyWaterPlan6": 45,
+						"tyWaterYield": 567
+						
+					};
+					this.dealInitFormDate()
+					this.dealInittableDate()
+//					this._calculaData()
+					this.init()
+					
+
+			}
+			InitTable.prototype = {
+//				内部初始化数据赋值
+				dealInitFormDate: function() {
+					for(let i in this.formData){
+						if(!!this.receiveData[i]){
+							this.formData[i]=this.receiveData[i]
+						}else{
+							this.formData[i]=''
+						}
+						
+					}
+				},
+				dealInittableDate: function() {
+					for(let i in this.tableData){
+						
+						if(!!this.receiveData[i]){
+							this.tableData[i]=this.receiveData[i]
+						}else{
+							this.tableData[i] = ''
+						}
+					}
+				},
+				init: function() {					
+					
+					var $CONTENTHTML = $('<table border="1" width="100%"><tr><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr><tr class="rowone"><td colspan="12"><div class="clearfloat"><label class="lt font14">日期：<span id="nowTime" class="formData idxDate"></span></label><div class="rt"><span id="save" class="normalbar cyan">保存</span><span id="compute" class="normalbar orange">重新计算</span><span class="normalbar">打印全部方案</span></div></div></td></tr><tr><td colspan="4"><span>太园泵站日抽水量（万m3） </span></td><td colspan="3"><b class="formData tyWaterYield">650 tyWaterYield </b></td><td colspan="3"><span>最小流量 </span></td><td colspan="2"><input type="text" placeholder="请输入" value="tyMinFlow" class="formData tyMinFlow computeData" /></td></tr><tr><td colspan="4"><span>预测日供水量（万m3）</span></td><td colspan="3"><b class="formData tyWaterYieldAdj">600 tyWaterYieldAdj</b></td><td colspan="3"><span>最大流量</span></td><td colspan="2"><input type="text" placeholder="请输入" value="tyMaxFlow" class="formData tyMaxFlow computeData" /></td></tr><tr><td colspan="4"><span>日抽水量调整（万m3）</span></td><td colspan="8"><input type="text" placeholder="请输入" value="tyWaterYieldPre" class="formData tyWaterYieldPre computeData" /></td></tr><tr><td colspan="7"><b>供水计划</b></td><td colspan="5"><b>运行方式</b></td></tr><tr><td colspan="2">水库</td><td>当前水位(m)</td><td>当前库容(万m³)</td><td>目标水位(m)</td><td>目标库容(万m³)</td><td>库容差(万m³)</td><td colspan="5"><b>太园开机安排</b></td></tr><tr><td colspan="2">深圳水库</td><td><span class="formData szPreWaterLevel">2 szPreWaterLevel</span></td><td><span class="formData szPreWaterKr">3 szPreWaterKr</span></td><td><input type="number" placeholder="请输入" value="szObjWaterLevel" class="formData szObjWaterLevel" /></td><td><input type="number" placeholder="请输入" value="szObjWaterKr" class="formData szObjWaterKr watchData" /></td><td><span class="formData szKrDifference">6 szKrDifference</span></td><td colspan="2">时段</td><td>抽水流量(m³/s)</td><td>时长(h)</td><td>抽水量(万m³)</td></tr><tr><td colspan="2">雁田水库</td><td><span class="formData ytPreWaterLevel">2 ytPreWaterLevel</span></td><td><span class="formData ytPreWaterKr">3 ytPreWaterKr</span></td><td><input type="number" placeholder="请输入" value="ytObjWaterLevel" class="formData ytObjWaterLevel" /></td><td><input type="number" placeholder="请输入" value="ytObjWaterKr" class="formData ytObjWaterKr watchData" //></td><td><span class="formData ytKrDifference">6 ytKrDifference</span></td><td><span class="serverData tyEtime1">7 tyStime1 </span></td><td><span class="serverData tyEtime1">8 tyEtime1 </span></td><td><span class="serverData tyWaterSecond1">9 tyWaterSecond1 </span></td><td><span class="serverData tyDuration1">10 tyDuration1 </span></td><td><span class="serverData tyWaterPlan1">11 tyWaterPlan1 </span></td></tr><tr><td colspan="5">上日雁田水库出库水量（万m³）</td><td colspan="2"><b class="formData ytYesterdayWater">21 ytYesterdayWater</b></td><td><span class="serverData tyStime2">7 tyStime2 </span></td><td><span class="serverData tyEtime2">8 tyEtime2 </span></td><td><span class="serverData tyWaterSecond2">9 tyWaterSecond2 </span></td><td><span class="serverData tyDuration2">10 tyDuration2 </span></td><td><span class="serverData tyWaterPlan2">11 tyWaterPlan2 </span></td></tr><tr><td colspan="5">上日系统供水量(万m³）</td><td colspan="2"><b class="formData tyYesterdayWater">610 tyYesterdayWater</b></td><td><span class="serverData tyStime3">7 tyStime3 </span></td><td><span class="serverData tyEtime3">8 tyEtime3 </span></td><td><span class="serverData tyWaterSecond3">9 tyWaterSecond3 </span></td><td><span class="serverData tyDuration3">10 tyDuration3 </span></td><td><span class="serverData tyWaterPlan3">11 tyWaterPlan3 </span></td></tr><tr><td colspan="2">水损系数</td><td><span class="formData damageByWater">3 damageByWater </span></td><td colspan="3">日计划抽水量（万m³）</td><td><span class="formData dayPlanWater">4 dayPlanWater </span></td><td><span class="serverData tyStime4">7 tyStime4 </span></td><td><span class="serverData tyEtime4">8 tyEtime4 </span></td><td><span class="serverData tyWaterSecond4">9 tyWaterSecond4 </span></td><td><span class="serverData tyDuration4">10 tyDuration4 </span></td><td><span class="serverData tyWaterPlan4">11 tyWaterPlan4 </span></td></tr><tr><td colspan="7">上浦、雁田开机安排</td><td><span class="serverData tyStime5">7 tyStime5 </span></td><td><span class="serverData tyEtime5">8 tyEtime5 </span></td><td><span class="serverData tyWaterSecond5">9 tyWaterSecond5 </span></td><td><span class="serverData tyDuration5">10 tyDuration5 </span></td><td><span class="serverData tyWaterPlan5">11 tyWaterPlan5 </span></td></tr><tr><td colspan="2">时段</td><td colspan="2">抽水流量（m³/s）</td><td>时长(h)</td><td colspan="2">抽水量(万m³)</td><td><span class="serverData tyStime6">7 tyStime6 </span></td><td><span class="serverData tyEtime6">8 tyEtime6 </span></td><td><span class="serverData tyWaterSecond6">9 tyWaterSecond6 </span></td><td><span class="serverData tyDuration6">10 tyDuration6 </span></td><td><span class="serverData tyWaterPlan6">11 tyWaterPlan6 </span></td></tr><tr><td><input type="time" placeholder="请选择" value="1:1" class="formData period1 watchData" /></td><td><input type="time" placeholder="请选择" value="2:2" class="formData period2 watchData" /></td><td colspan="2"><input type="number" placeholder="请输入" value="waterFlow1" class="formData waterFlow1 watchData" /></td><td><span class="formData duration1">8 duration1 </span></td><td colspan="2"><span class="formData waterYield1">9 waterYield1 </span></td><td colspan="3" rowspan="3"><b>太园日抽水合计</b></td><td rowspan="3">24</td><td rowspan="3"><span class="serverData tyWaterYield">11 tyWaterYield</span></td></tr><tr><td><input type="time" placeholder="请选择" value="3：3" class="formData period3 watchData" /></td><td><input type="time" placeholder="请选择" value="4：4" class="formData period4 watchData" /></td><td colspan="2"><input type="number" placeholder="请输入" value="waterFlow2" class="formData waterFlow2 watchData" /></td><td><span class="formData duration2">8 duration2 </span></td><td colspan="2"><span class="formData waterYield2">9 waterYield2 </span></td><!--<td colspan="3">7</td>--><!--<td>10</td>--><!--<td>11</td>--></tr><tr><td colspan="4">生化站开机安排</td><td colspan="3"><input type="text" placeholder="请输入" value="shOpenPlan" class="formData shOpenPlan" /></td><!--<td colspan="3">7</td>--><!--<td>10</td>--><!--<td>11</td>--></tr><tr><td colspan="4">新开河橡胶坝状况</td><td colspan="3"><input type="text" placeholder="请输入" value="xkhStatus" class="formData xkhStatus" /></td><td colspan="3"><b>调度方式</b></td><td colspan="2"><b><input type="text" placeholder="请输入" value="dispatchMode" class="formData dispatchMode"/></b></td></tr><tr><td colspan="2">运行方式 调整情况 </td><td colspan="10"><input type="text" value="runModeAdj" placeholder="请输入" class="formData runModeAdj" /></td></tr><tr><td rowspan="6"><b>备注：</b></td><td colspan="11" rowspan="6"><textarea rows="3" cols="20" class="formData remark">remark </textarea></td></tr><tr></tr><tr></tr><tr></tr><tr></tr><tr></tr></table>');
+			
+
+				this.$contentTable.html($CONTENTHTML)
+				this._randerFormData();
+				this.randerServerData();
+				this.nowDate();
+				this.bind()
+//				console.log($serverData)
+				},
+				bind: function() {
+					this._computeClick();
+					this._watchData();
+					this._saveClick()
+				},
+				
+				_saveClick(){
+					var $save = $('#save')
+					var _this =this;
+					$save.on('click',function(){
+						console.log(_this.formData)
+					})
+				},
+				_computeClick(){
+					var $compute = $('#compute')
+					var $computeData = $('.computeData')
+					$compute.on('click',function(){
+						var bean = {};
+                    	bean.recordDate = $("#nowTime").html();
+                    	for(var i=0;i<$computeData.length;i++){
+                    		console.log($computeData[i].className.split(' ')[1])
+                    		if($computeData[i].value==''){
+                    			
+                    		}else{
+                    			bean[$computeData[i].className.split(' ')[1]] = $computeData[i].value
+                    		}
+                    		
+                    	}
+                    	insertAdj(bean)
+					})
+       
+				},
+				_dealTime(end,start){
+					var h=0,m=0; 
+					if(!start||!end){
+						return ''
+					}
+					if(!!end.split(':')[0]&&!!start.split(':')[0]){
+						h =end.split(':')[0] - start.split(':')[0]
+					}
+					if(!!end.split(':')[1]&&!!start.split(':')[1]){
+						m =end.split(':')[1] - start.split(':')[1]
+					}
+					return (h+m/60).toFixed(2)
+				},
+				_calculaData(){
+//					console.log(this.formData.szPreWaterKr,this.formData.szObjWaterKr,this.formData.szKrDifference);
+					this.formData.szKrDifference = (this.formData.szObjWaterKr-this.formData.szPreWaterKr).toFixed(2)
+	
+//					console.log(this.formData.ytPreWaterKr,this.formData.ytObjWaterKr,this.formData.ytKrDifference);
+					this.formData.ytKrDifference = (this.formData.ytObjWaterKr - this.formData.ytPreWaterKr).toFixed(2)					
+//					console.log(this.formData.period1,this.formData.period2,this.formData.waterFlow1,this.formData.duration1,this.formData.waterYield1);
+					
+					this.formData.duration1 = this._dealTime(this.formData.period2,this.formData.period1)				
+					if(this.formData.duration1!=''&&this.formData.waterFlow1!=''){
+						this.formData.waterYield1 = this.formData.duration1*this.formData.waterFlow1*0.36
+					}					
+//					console.log(this.formData.period1,this.formData.period2,this.formData.waterFlow1,this.formData.duration1,this.formData.waterYield1);
+					
+//					console.log(this.formData.period3,this.formData.period4,this.formData.waterFlow2,this.formData.duration2,this.formData.waterYield2);
+				
+					this.formData.duration2 = this._dealTime(this.formData.period3,this.formData.period4)
+					if(this.formData.duration2!=''&&this.formData.waterFlow2!=''){
+						this.formData.waterYield2 = this.formData.duration2*this.formData.waterFlow2*0.36
+					}
+		
+//					console.log(this.formData.period3+"1a",this.formData.period4+"2a",this.formData.waterFlow2+"3a",this.formData.duration2+"4a",this.formData.waterYield2+"5a");
+					
+				},
+				_watchData(){
+					var $watchData = $('.watchData');
+					var _this = this;
+					$watchData.on('blur',function(){
+//						console.log(_this);
+//						console.log(_this.formData)
+//						
+						_this._changeFormData($watchData)
+						_this._calculaData()
+						_this.init()
+					})
+					console.log($watchData)
+					
+				},
+				_changeFormData(changeData){
+					for(var i=0;i<changeData.length;i++){
+						console.log(changeData[i].className.split(' ')[1])
+						console.dir(changeData[i])
+						this.formData[changeData[i].className.split(' ')[1]] = changeData[i].value
+					}
+				},
+				nowDate(){
+						var now = new Date();
+						var myDate = formatDate(now);
+						$("#nowTime").html(myDate);
+				},
+//				渲染formData内容
+				_randerFormData(){
+				var $formData = this.$contentTable.find('.formData');
+				for(var i=0;i<$formData.length;i++){
+				if($formData[i].nodeName=="INPUT"){
+//					console.log($formData[i])
+				if(!!this.formData[$formData[i].className.split(' ')[1]]){
+					$formData[i].value = this.formData[$formData[i].className.split(' ')[1]]
+				}else{
+					$formData[i].value = ''
+				}
+					
+				}else{
+					if(!!this.formData[$formData[i].className.split(' ')[1]]){
+						$formData[i].innerHTML = this.formData[$formData[i].className.split(' ')[1]]
+					}else{
+						$formData[i].innerHTML = ''
+					}
+						
+				}				
+				}
+				},
+//				渲染表格内容
+				randerServerData(){
+				var $serverData = this.$contentTable.find('.serverData');
+				 for(var i=0;i<$serverData.length;i++){
+					$serverData[i].innerHTML = this.tableData[$serverData[i].className.split(' ')[1]]
+				}
+			 },
+			 selectScheduleExtByDate(){
+				var asyncUrl = "/selectScheduleExtByDate.htm";
+				$.ajax({
+					type: "GET",
+					url: asyncUrl,
+					contentType: 'application/json;charset=utf-8',
+					dataType: 'json',
+					//数据格式是json串
+					data: {
+						date: formatDate(new Date())
+					},
+					success: function(res) {
+						console.log(res);
+						this.receiveData = res.data;
+						this.dealInittableDate();
+						this.randerServerData()
+					},
+					error: function(jqXHR) {
+						alert("发生错误：" + jqXHR.status);
+					}
+				});
+			}
+				
+			}
+			
+function insertAdj(bean){
+    var insertAdjUrl = "/updateDayWater.htm"
+    $.ajax({
+        type: "POST",
+        url: insertAdjUrl,
+        contentType:'application/json;charset=utf-8',
+        dataType:'json',
+        //数据格式是json串
+        data:JSON.stringify(bean),
+        success: function (res) {
+            asyncRequest();
+        }
+    });
+}
+/**
+ * 异步请求接口
+ * */
+function asyncRequest(){
+    var asyncUrl = "/asyncRequest.htm";
+    $.ajax({
+        type: "POST",
+        url: asyncUrl,
+        contentType:'application/json;charset=utf-8',
+        dataType:'json',
+        //数据格式是json串
+        data:JSON.stringify({
+            "clientCode": "1234567",
+            "skCode": "18b5f8c",
+            "serviceId": "d9da7d8efe4f43af8c5474ac5e88c901"
+
+        }),
+        success: function (res) {
+            eid = res.data;
+            timer = window.setInterval(asynStatus, 1000 * 3);
+            showWaiting();
+        },
+        error:function(jqXHR){
+            alert("发生错误："+ jqXHR.status);
+        }
+    });
+}
+/**
+ * 访问异步请求的状态
+ * */
+function asynStatus(){
+    var statusUrl = "/asyncStatus.htm";
+    $.ajax({
+        type: "POST",
+        url: statusUrl,
+        contentType:'application/json;charset=utf-8',
+        dataType:'json',
+        //数据格式是json串
+        data:JSON.stringify({
+            "clientCode": "1234567",
+            "skCode": "18b5f8c",
+            "serviceId": "d9da7d8efe4f43af8c5474ac5e88c901",
+            "eid":eid
+        }),
+        success: function (res) {
+            if(res.data.status=="FINISHED"){
+                window.clearTimeout(timer);
+                //update(scheduleBean);
+                diaoduTable.selectScheduleExtByDate()
+//              diaoduTable.randerServerData
+                closeWaiting();
+            }else if(res.data.status=="FAILED"){
+                alert("计算失败，抽水量不可低于146")
+                window.clearTimeout(timer);
+                closeWaiting();
+            }else {
+                console.log(res);
+			}
+        }
+    });
+}
+
+//关闭等待窗口
+function closeWaiting() {
+    var bgDiv = document.getElementById("bgDiv");
+    var msgDiv = document.getElementById("msgDiv");
+    //移除背景遮罩层div
+    if(bgDiv != null){
+        document.body.removeChild(bgDiv);
+    }
+    //移除中间信息提示层div
+    if(msgDiv != null){
+        document.body.removeChild(msgDiv);
+    }
+}
+//显示等待窗口
+function showWaiting() {
+    var msgw, msgh, bordercolor;
+    msgw = 300; //提示窗口的宽度
+    msgh = 100; //提示窗口的高度
+    bordercolor = "#336699"; //提示窗口的边框颜色
+    titlecolor = "#99CCFF"; //提示窗口的标题颜色
+
+    var sWidth, sHeight;
+    sWidth = document.body.clientWidth;
+    sHeight = document.body.clientHeight;
+
+    //背景遮罩层div
+    var bgObj = document.createElement("div");
+    bgObj.setAttribute('id', 'bgDiv');
+    bgObj.style.position = "absolute";
+    bgObj.style.top = "0px";
+    bgObj.style.background = "#888";
+    bgObj.style.filter = "progid:DXImageTransform.Microsoft.Alpha(style=3,opacity=25,finishOpacity=75";
+    bgObj.style.opacity = "0.6";
+    bgObj.style.left = "0px";
+    bgObj.style.width = sWidth + "px";
+    bgObj.style.height = sHeight + "px";
+    document.body.appendChild(bgObj);
+
+    //信息提示层div
+    var msgObj = document.createElement("div");
+    msgObj.setAttribute("id", "msgDiv");
+    msgObj.setAttribute("align", "center");
+    msgObj.style.position = "absolute";
+    msgObj.style.background = "white";
+    msgObj.style.font = "12px/1.6em Verdana, Geneva, Arial, Helvetica, sans-serif";
+    msgObj.style.border = "1px solid " + bordercolor;
+    msgObj.style.width = msgw + "px";
+    msgObj.style.height = msgh + "px";
+    msgObj.style.top = (document.documentElement.scrollTop + (sHeight - msgh) / 2) + "px";
+    msgObj.style.left = (sWidth - msgw) / 2 + "px";
+    document.body.appendChild(msgObj);
+
+    //标题栏
+    var title = document.createElement("h4");
+    title.setAttribute("id", "msgTitle");
+    title.setAttribute("align", "left");
+    title.style.margin = "0px";
+    title.style.padding = "3px";
+    title.style.background = bordercolor;
+    title.style.filter = "progid:DXImageTransform.Microsoft.Alpha(startX=20, startY=20, finishX=100, finishY=100,style=1,opacity=75,finishOpacity=100);";
+    title.style.opacity = "0.75";
+    title.style.border = "1px solid " + bordercolor;
+    title.style.height = "30px";
+    title.style.font = "12px Verdana, Geneva, Arial, Helvetica, sans-serif";
+    title.style.color = "white";
+    title.innerHTML = "正在计算中，请稍候......";
+    document.getElementById("msgDiv").appendChild(title);
+
+    //中间等待图标
+    var img = document.createElement("img");
+    img.style.margin = "10px 0px 10px 0px";
+    img.style.width = "48px";
+    img.style.height = "48px";
+    img.setAttribute("src", "../../images/waiting.gif");
+    document.getElementById("msgDiv").appendChild(img);
+}
+		</script>
+	</body>
+
+</html>
