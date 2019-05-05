@@ -4,31 +4,35 @@
 	<head>
 		<meta charset="UTF-8">
 		<title>调度方案</title>
-		<link rel="stylesheet" type="text/css" href="css/common.css" />
-		<link rel="stylesheet" type="text/css" href="css/mystyle.css" />
-		<link rel="stylesheet" href="css/newDiaodu.css" />
-		<script type="text/javascript" src="js/jquery-1.8.3.min.js"></script>
-		<script type="text/javascript" src="js/common.js"></script>
+		<link rel="stylesheet" type="text/css" href="../../css/common.css" />
+		<link rel="stylesheet" type="text/css" href="../../css/mystyle.css" />
+		<link rel="stylesheet" type="text/css" href="../../css/jcDate.css"/>
+		<link rel="stylesheet" href="newDiaodu.css" />
+		<script type="text/javascript" src="../../js/jquery-1.8.3.min.js"></script>
+		<script type="text/javascript" src="../../js/jQuery-jcDate.js"></script>
+		<script type="text/javascript" src="../../js/common.js"></script>
 	</head>
 
 	<body>
-		<div id="content-table" style="padding:20px">
+		<div class="content-right">
+			<div class="table-main plan-main">
+				<div id="content-table">
 		
 				</div>
+				<div id="other-content">
+					
+				</div>
+			</div>
+		</div>
+
 		<script>
-		var eid;
+			
+			var eid;
 			//获取时间
 			function formatDate(date) {
-				return date.getFullYear() + "-" + ((date.getMonth() + 1) > 9 ? (date.getMonth() + 1) : ('0' + (date.getMonth() + 1))) + "-" + date.getDate();
+				return date.getFullYear() + "-" + ((date.getMonth() + 1) > 9 ? (date.getMonth() + 1) : ('0' + (date.getMonth() + 1))) + "-" + (date.getDate() > 9 ? date.getDate() : ('0' + date.getDate()));
 			}
-//			$(function() {
-//				var now = new Date();
-//				var myDate = formatDate(now);
-//				$("#nowTime").html(myDate);
-				//				planData({'date':myDate});
-//			});
-
-			function selectScheduleExtByDate() {
+			function selectScheduleExtByDate(data) {
 				var asyncUrl = "/selectScheduleExtByDate.htm";
 				$.ajax({
 					type: "GET",
@@ -37,7 +41,7 @@
 					dataType: 'json',
 					//数据格式是json串
 					data: {
-						date: formatDate(new Date())
+						date: data || formatDate(new Date())
 					},
 					success: function(res) {
 						console.log(res)
@@ -51,11 +55,105 @@
 				});
 			}
 			selectScheduleExtByDate();
-
+			
+//			其他调度方案的数据
+				function selectScheduleByDate(date) {
+				var asyncUrl = "/selectScheduleByDate.htm";
+				$.ajax({
+					type: "GET",
+					url: asyncUrl,
+					contentType: 'application/json;charset=utf-8',
+					dataType: 'json',
+					//数据格式是json串
+					data: {
+						date: date || formatDate(new Date())
+					},
+					success: function(res) {
+//						console.log(res)
+						otheradata = new OtherTable(res.data)
+					},
+					error: function(jqXHR) {
+						alert("发生错误：" + jqXHR.status);
+						var res = {"code":0,"description":"查询成功","status":0,"data":[{"station":2,"period":"11:00-12:00","duration":1,"unitVolume":47,"volume":16},{"station":2,"period":"12:00-17:00","duration":5,"unitVolume":47,"volume":84},{"station":2,"period":"17:00-20:50","duration":3.84,"unitVolume":47,"volume":64},{"station":2,"period":"20:50-00:00","duration":3.16,"unitVolume":60,"volume":68},{"station":2,"period":"00:00-07:24","duration":7.4,"unitVolume":60,"volume":159},{"station":2,"period":"07:24-11:00","duration":3.6,"unitVolume":47,"volume":60},{"station":3,"period":"11:00-12:00","duration":1,"unitVolume":45,"volume":16},{"station":3,"period":"12:00-17:00","duration":5,"unitVolume":45,"volume":81},{"station":3,"period":"17:00-21:16","duration":4.28,"unitVolume":45,"volume":69},{"station":3,"period":"21:16-00:00","duration":2.72,"unitVolume":58,"volume":56},{"station":3,"period":"00:00-07:42","duration":7.71,"unitVolume":58,"volume":160},{"station":3,"period":"07:42-11:00","duration":3.29,"unitVolume":45,"volume":53},{"station":4,"period":"11:00-12:00","duration":1,"unitVolume":44,"volume":15},{"station":4,"period":"12:00-17:00","duration":5,"unitVolume":44,"volume":79},{"station":4,"period":"17:00-22:28","duration":5.47,"unitVolume":44,"volume":86},{"station":4,"period":"22:28-00:00","duration":1.53,"unitVolume":57,"volume":31},{"station":4,"period":"00:00-08:39","duration":8.65,"unitVolume":57,"volume":177},{"station":4,"period":"08:39-11:00","duration":2.35,"unitVolume":44,"volume":37}]}
+					}
+					otheradata = new OtherTable(res.data)
+				});
+			}
+			selectScheduleByDate();
+			function OtherTable(data){
+				this.otherTableData = data;
+				this.$OTHERCONTENT = $('#other-content');
+				this.tableDataArr = [];
+				this.stationArr = ['','太园泵站','莲湖泵站','旗岭泵站','金湖泵站'];
+				this.init()
+			}
+			OtherTable.prototype = {
+				init:function(){
+					this.dealData();
+					this.createHtml()
+				},
+				bind:function(){
+					
+				},
+				dealData:function(){
+					var item = {};
+					for(var i=0;i<this.otherTableData.length;i++){
+						for(var j in this.stationArr){
+							if(this.otherTableData[i].station==j){
+								this.tableDataArr[this.stationArr[j]]=[]
+							}
+						}
+						
+					}
+					for(var k=0;k<this.otherTableData.length;k++){
+						item = {};
+						item.period = this.otherTableData[k].period
+						item.unitVolume = this.otherTableData[k].unitVolume
+						item.volume = this.otherTableData[k].volume
+						this.tableDataArr[this.stationArr[this.otherTableData[k].station]].push(item)
+					}
+					
+				},
+				createHtml(){
+					console.log(this.tableDataArr)
+					var HTML = '';
+					var total = 0;
+					for(var i in this.tableDataArr){
+						HTML += '<table border="1" width="100%"><tr><td colspan="4"><b>'+i+'优化调度日运行方式</b></td></tr><tr><td>流量段</td><td>时段</td><td>抽水流量（m3/s）</td><td>抽水量（万m3）</td></tr>';
+						
+						for(var j in this.tableDataArr[i]){
+							HTML += '<tr>'
+								if(j==0){
+									HTML+='<td rowspan="3">小流量</td>'
+								}
+								if(j==3){
+									HTML+='<td rowspan="2">大流量</td>'
+								}
+								if(j==5){
+									HTML+='<td>小流量</td>'
+								}
+							for(var k in this.tableDataArr[i][j]){
+								
+								HTML+='<td>'+this.tableDataArr[i][j][k]+'</td>'
+								
+							}
+							HTML +='</tr>'
+							total+=this.tableDataArr[i][j]['volume']
+//							tableContent+=TDHTML
+						}
+						
+						HTML += '<tr><td colspan="3">抽水量合计:</td><td>'+total+'</td></tr></table>'
+					}	
+//					console.log($(HTML))
+					this.$OTHERCONTENT.html(HTML)
+				}
+				
+			}
 //表格构造函数
 			function InitTable(serverData) {
 				this.receiveData = serverData;
 				this.$contentTable = $("#content-table");
+				this.$CONTENTHTML = $('<table border="1" width="100%"><tr><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr><tr class="rowone"><td colspan="12"><div class="clearfloat"><label class="lt font14">日期：<span id="nowTime" class="formData idxDate"></span></label><div class="rt"><span id="save" class="normalbar cyan">保存</span><span id="compute" class="normalbar orange">重新计算</span><span class="normalbar">打印全部方案</span></div></div></td></tr><tr><td colspan="4"><span>太园泵站日抽水量（万m3） </span></td><td colspan="3"><b class="formData tyWaterYield serverData">650 tyWaterYield </b></td><td colspan="3"><span>最小流量 </span></td><td colspan="2"><input type="number" placeholder="请输入" value="tyMinFlow" class="formData tyMinFlow computeData" /></td></tr><tr><td colspan="4"><span>预测日供水量（万m3）</span></td><td colspan="3"><b class="formData tyWaterYieldPre">600 tyWaterYieldPre</b></td><td colspan="3"><span>最大流量</span></td><td colspan="2"><input type="number" placeholder="请输入" value="tyMaxFlow" max="60" min="100" class="formData tyMaxFlow computeData" /></td></tr><tr><td colspan="4"><span>日抽水量调整（万m3）</span></td><td colspan="8"><input type="text" placeholder="请输入" value="tyWaterYieldAdj" class="formData tyWaterYieldAdj computeData" /></td></tr><tr><td colspan="7"><b>供水计划</b></td><td colspan="5"><b>运行方式</b></td></tr><tr><td colspan="2">水库</td><td>当前水位(m)</td><td>当前库容(万m³)</td><td>目标水位(m)</td><td>目标库容(万m³)</td><td>库容差(万m³)</td><td colspan="5"><b>太园开机安排</b></td></tr><tr><td colspan="2">深圳水库</td><td><span class="formData szPreWaterLevel">2 szPreWaterLevel</span></td><td><span class="formData szPreWaterKr">3 szPreWaterKr</span></td><td><input type="number" placeholder="请输入" value="szObjWaterLevel" class="formData szObjWaterLevel" /></td><td><input type="number" placeholder="请输入" value="szObjWaterKr" class="formData szObjWaterKr watchData" /></td><td><span class="formData szKrDifference">6 szKrDifference</span></td><td colspan="2">时段</td><td>抽水流量(m³/s)</td><td>时长(h)</td><td>抽水量(万m³)</td></tr><tr><td colspan="2">雁田水库</td><td><span class="formData ytPreWaterLevel">2 ytPreWaterLevel</span></td><td><span class="formData ytPreWaterKr">3 ytPreWaterKr</span></td><td><input type="number" placeholder="请输入" value="ytObjWaterLevel" class="formData ytObjWaterLevel" /></td><td><input type="number" placeholder="请输入" value="ytObjWaterKr" class="formData ytObjWaterKr watchData" //></td><td><span class="formData ytKrDifference">6 ytKrDifference</span></td><td><span class="serverData tyStime1">7 tyStime1 </span></td><td><span class="serverData tyEtime1">8 tyEtime1 </span></td><td><span class="serverData tyWaterSecond1">9 tyWaterSecond1 </span></td><td><span class="serverData tyDuration1">10 tyDuration1 </span></td><td><span class="serverData tyWaterPlan1">11 tyWaterPlan1 </span></td></tr><tr><td colspan="5">上日雁田水库出库水量（万m³）</td><td colspan="2"><b class="formData ytYesterdayWater">21 ytYesterdayWater</b></td><td><span class="serverData tyStime2">7 tyStime2 </span></td><td><span class="serverData tyEtime2">8 tyEtime2 </span></td><td><span class="serverData tyWaterSecond2">9 tyWaterSecond2 </span></td><td><span class="serverData tyDuration2">10 tyDuration2 </span></td><td><span class="serverData tyWaterPlan2">11 tyWaterPlan2 </span></td></tr><tr><td colspan="5">上日系统供水量(万m³）</td><td colspan="2"><b class="formData tyYesterdayWater">610 tyYesterdayWater</b></td><td><span class="serverData tyStime3">7 tyStime3 </span></td><td><span class="serverData tyEtime3">8 tyEtime3 </span></td><td><span class="serverData tyWaterSecond3">9 tyWaterSecond3 </span></td><td><span class="serverData tyDuration3">10 tyDuration3 </span></td><td><span class="serverData tyWaterPlan3">11 tyWaterPlan3 </span></td></tr><tr><td colspan="2">水损系数</td><td><span class="formData damageByWater">3 damageByWater </span></td><td colspan="3">日计划抽水量（万m³）</td><td><span class="formData dayPlanWater">4 dayPlanWater </span></td><td><span class="serverData tyStime4">7 tyStime4 </span></td><td><span class="serverData tyEtime4">8 tyEtime4 </span></td><td><span class="serverData tyWaterSecond4">9 tyWaterSecond4 </span></td><td><span class="serverData tyDuration4">10 tyDuration4 </span></td><td><span class="serverData tyWaterPlan4">11 tyWaterPlan4 </span></td></tr><tr><td colspan="7">上浦、雁田开机安排</td><td><span class="serverData tyStime5">7 tyStime5 </span></td><td><span class="serverData tyEtime5">8 tyEtime5 </span></td><td><span class="serverData tyWaterSecond5">9 tyWaterSecond5 </span></td><td><span class="serverData tyDuration5">10 tyDuration5 </span></td><td><span class="serverData tyWaterPlan5">11 tyWaterPlan5 </span></td></tr><tr><td colspan="2">时段</td><td colspan="2">抽水流量（m³/s）</td><td>时长(h)</td><td colspan="2">抽水量(万m³)</td><td><span class="serverData tyStime6">7 tyStime6 </span></td><td><span class="serverData tyEtime6">8 tyEtime6 </span></td><td><span class="serverData tyWaterSecond6">9 tyWaterSecond6 </span></td><td><span class="serverData tyDuration6">10 tyDuration6 </span></td><td><span class="serverData tyWaterPlan6">11 tyWaterPlan6 </span></td></tr><tr><td><input type="time" placeholder="请选择" value="1:1" class="formData period1 watchData" /></td><td><input type="time" placeholder="请选择" value="2:2" class="formData period2 watchData" /></td><td colspan="2"><input type="number" placeholder="请输入" value="waterFlow1" class="formData waterFlow1 watchData" /></td><td><span class="formData duration1">8 duration1 </span></td><td colspan="2"><span class="formData waterYield1">9 waterYield1 </span></td><td colspan="3" rowspan="3"><b>太园日抽水合计</b></td><td rowspan="3">24</td><td rowspan="3"><span class="serverData tyWaterYield">11 tyWaterYield</span></td></tr><tr><td><input type="time" placeholder="请选择" value="3：3" class="formData period3 watchData" /></td><td><input type="time" placeholder="请选择" value="4：4" class="formData period4 watchData" /></td><td colspan="2"><input type="number" placeholder="请输入" value="waterFlow2" class="formData waterFlow2 watchData" /></td><td><span class="formData duration2">8 duration2 </span></td><td colspan="2"><span class="formData waterYield2">9 waterYield2 </span></td><!--<td colspan="3">7</td>--><!--<td>10</td>--><!--<td>11</td>--></tr><tr><td colspan="4">生化站开机安排</td><td colspan="3"><input type="text" placeholder="请输入" value="shOpenPlan" class="formData shOpenPlan" /></td><!--<td colspan="3">7</td>--><!--<td>10</td>--><!--<td>11</td>--></tr><tr><td colspan="4">新开河橡胶坝状况</td><td colspan="3"><input type="text" placeholder="请输入" value="xkhStatus" class="formData xkhStatus" /></td><td colspan="3"><b>调度方式</b></td><td colspan="2"><b><input type="text" placeholder="请输入" value="dispatchMode" class="formData dispatchMode"/></b></td></tr><tr><td colspan="2">运行方式 调整情况 </td><td colspan="10"><input type="text" value="runModeAdj" placeholder="请输入" class="formData runModeAdj" /></td></tr><tr><td rowspan="6"><b>备注：</b></td><td colspan="11" rowspan="6"><textarea rows="3" cols="20" class="formData remark">remark </textarea></td></tr><tr></tr><tr></tr><tr></tr><tr></tr><tr></tr></table>');
 //				初始化表单数据
 				this.formData = {
 					idxDate: '', //时间
@@ -76,7 +174,7 @@
 					ytPreWaterKr: '', //雁田水库预测库容
 					ytKrDifference: '', //雁田水库库容差
 					szKrDifference: '', //深圳水库库容差
-					damageByWater: '', //水损系数
+					damageByWater: '1.03', //水损系数
 					dayPlanWater: '', //日	
 					period1: '', // 上浦雁田抽水时段1
 					period2: '', //上浦雁田抽水时段2
@@ -145,7 +243,8 @@
 						}else{
 							this.formData[i]=''
 						}
-						
+						this.formData['damageByWater']=1.03
+//						damageByWater: '1.03'
 					}
 				},
 				dealInittableDate: function() {
@@ -158,30 +257,120 @@
 						}
 					}
 				},
-				init: function() {					
-					
-					var $CONTENTHTML = $('<table border="1" width="100%"><tr><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr><tr class="rowone"><td colspan="12"><div class="clearfloat"><label class="lt font14">日期：<span id="nowTime" class="formData idxDate"></span></label><div class="rt"><span id="save" class="normalbar cyan">保存</span><span id="compute" class="normalbar orange">重新计算</span><span class="normalbar">打印全部方案</span></div></div></td></tr><tr><td colspan="4"><span>太园泵站日抽水量（万m3） </span></td><td colspan="3"><b class="formData tyWaterYield">650 tyWaterYield </b></td><td colspan="3"><span>最小流量 </span></td><td colspan="2"><input type="text" placeholder="请输入" value="tyMinFlow" class="formData tyMinFlow computeData" /></td></tr><tr><td colspan="4"><span>预测日供水量（万m3）</span></td><td colspan="3"><b class="formData tyWaterYieldAdj">600 tyWaterYieldAdj</b></td><td colspan="3"><span>最大流量</span></td><td colspan="2"><input type="text" placeholder="请输入" value="tyMaxFlow" class="formData tyMaxFlow computeData" /></td></tr><tr><td colspan="4"><span>日抽水量调整（万m3）</span></td><td colspan="8"><input type="text" placeholder="请输入" value="tyWaterYieldPre" class="formData tyWaterYieldPre computeData" /></td></tr><tr><td colspan="7"><b>供水计划</b></td><td colspan="5"><b>运行方式</b></td></tr><tr><td colspan="2">水库</td><td>当前水位(m)</td><td>当前库容(万m³)</td><td>目标水位(m)</td><td>目标库容(万m³)</td><td>库容差(万m³)</td><td colspan="5"><b>太园开机安排</b></td></tr><tr><td colspan="2">深圳水库</td><td><span class="formData szPreWaterLevel">2 szPreWaterLevel</span></td><td><span class="formData szPreWaterKr">3 szPreWaterKr</span></td><td><input type="number" placeholder="请输入" value="szObjWaterLevel" class="formData szObjWaterLevel" /></td><td><input type="number" placeholder="请输入" value="szObjWaterKr" class="formData szObjWaterKr watchData" /></td><td><span class="formData szKrDifference">6 szKrDifference</span></td><td colspan="2">时段</td><td>抽水流量(m³/s)</td><td>时长(h)</td><td>抽水量(万m³)</td></tr><tr><td colspan="2">雁田水库</td><td><span class="formData ytPreWaterLevel">2 ytPreWaterLevel</span></td><td><span class="formData ytPreWaterKr">3 ytPreWaterKr</span></td><td><input type="number" placeholder="请输入" value="ytObjWaterLevel" class="formData ytObjWaterLevel" /></td><td><input type="number" placeholder="请输入" value="ytObjWaterKr" class="formData ytObjWaterKr watchData" //></td><td><span class="formData ytKrDifference">6 ytKrDifference</span></td><td><span class="serverData tyEtime1">7 tyStime1 </span></td><td><span class="serverData tyEtime1">8 tyEtime1 </span></td><td><span class="serverData tyWaterSecond1">9 tyWaterSecond1 </span></td><td><span class="serverData tyDuration1">10 tyDuration1 </span></td><td><span class="serverData tyWaterPlan1">11 tyWaterPlan1 </span></td></tr><tr><td colspan="5">上日雁田水库出库水量（万m³）</td><td colspan="2"><b class="formData ytYesterdayWater">21 ytYesterdayWater</b></td><td><span class="serverData tyStime2">7 tyStime2 </span></td><td><span class="serverData tyEtime2">8 tyEtime2 </span></td><td><span class="serverData tyWaterSecond2">9 tyWaterSecond2 </span></td><td><span class="serverData tyDuration2">10 tyDuration2 </span></td><td><span class="serverData tyWaterPlan2">11 tyWaterPlan2 </span></td></tr><tr><td colspan="5">上日系统供水量(万m³）</td><td colspan="2"><b class="formData tyYesterdayWater">610 tyYesterdayWater</b></td><td><span class="serverData tyStime3">7 tyStime3 </span></td><td><span class="serverData tyEtime3">8 tyEtime3 </span></td><td><span class="serverData tyWaterSecond3">9 tyWaterSecond3 </span></td><td><span class="serverData tyDuration3">10 tyDuration3 </span></td><td><span class="serverData tyWaterPlan3">11 tyWaterPlan3 </span></td></tr><tr><td colspan="2">水损系数</td><td><span class="formData damageByWater">3 damageByWater </span></td><td colspan="3">日计划抽水量（万m³）</td><td><span class="formData dayPlanWater">4 dayPlanWater </span></td><td><span class="serverData tyStime4">7 tyStime4 </span></td><td><span class="serverData tyEtime4">8 tyEtime4 </span></td><td><span class="serverData tyWaterSecond4">9 tyWaterSecond4 </span></td><td><span class="serverData tyDuration4">10 tyDuration4 </span></td><td><span class="serverData tyWaterPlan4">11 tyWaterPlan4 </span></td></tr><tr><td colspan="7">上浦、雁田开机安排</td><td><span class="serverData tyStime5">7 tyStime5 </span></td><td><span class="serverData tyEtime5">8 tyEtime5 </span></td><td><span class="serverData tyWaterSecond5">9 tyWaterSecond5 </span></td><td><span class="serverData tyDuration5">10 tyDuration5 </span></td><td><span class="serverData tyWaterPlan5">11 tyWaterPlan5 </span></td></tr><tr><td colspan="2">时段</td><td colspan="2">抽水流量（m³/s）</td><td>时长(h)</td><td colspan="2">抽水量(万m³)</td><td><span class="serverData tyStime6">7 tyStime6 </span></td><td><span class="serverData tyEtime6">8 tyEtime6 </span></td><td><span class="serverData tyWaterSecond6">9 tyWaterSecond6 </span></td><td><span class="serverData tyDuration6">10 tyDuration6 </span></td><td><span class="serverData tyWaterPlan6">11 tyWaterPlan6 </span></td></tr><tr><td><input type="time" placeholder="请选择" value="1:1" class="formData period1 watchData" /></td><td><input type="time" placeholder="请选择" value="2:2" class="formData period2 watchData" /></td><td colspan="2"><input type="number" placeholder="请输入" value="waterFlow1" class="formData waterFlow1 watchData" /></td><td><span class="formData duration1">8 duration1 </span></td><td colspan="2"><span class="formData waterYield1">9 waterYield1 </span></td><td colspan="3" rowspan="3"><b>太园日抽水合计</b></td><td rowspan="3">24</td><td rowspan="3"><span class="serverData tyWaterYield">11 tyWaterYield</span></td></tr><tr><td><input type="time" placeholder="请选择" value="3：3" class="formData period3 watchData" /></td><td><input type="time" placeholder="请选择" value="4：4" class="formData period4 watchData" /></td><td colspan="2"><input type="number" placeholder="请输入" value="waterFlow2" class="formData waterFlow2 watchData" /></td><td><span class="formData duration2">8 duration2 </span></td><td colspan="2"><span class="formData waterYield2">9 waterYield2 </span></td><!--<td colspan="3">7</td>--><!--<td>10</td>--><!--<td>11</td>--></tr><tr><td colspan="4">生化站开机安排</td><td colspan="3"><input type="text" placeholder="请输入" value="shOpenPlan" class="formData shOpenPlan" /></td><!--<td colspan="3">7</td>--><!--<td>10</td>--><!--<td>11</td>--></tr><tr><td colspan="4">新开河橡胶坝状况</td><td colspan="3"><input type="text" placeholder="请输入" value="xkhStatus" class="formData xkhStatus" /></td><td colspan="3"><b>调度方式</b></td><td colspan="2"><b><input type="text" placeholder="请输入" value="dispatchMode" class="formData dispatchMode"/></b></td></tr><tr><td colspan="2">运行方式 调整情况 </td><td colspan="10"><input type="text" value="runModeAdj" placeholder="请输入" class="formData runModeAdj" /></td></tr><tr><td rowspan="6"><b>备注：</b></td><td colspan="11" rowspan="6"><textarea rows="3" cols="20" class="formData remark">remark </textarea></td></tr><tr></tr><tr></tr><tr></tr><tr></tr><tr></tr></table>');
-			
-
-				this.$contentTable.html($CONTENTHTML)
+				init: function() {
+					console.log(window.location.search.split("=")[1])
+//					alert('init')
+				this.$contentTable.html(this.$CONTENTHTML)
 				this._randerFormData();
 				this.randerServerData();
 				this.nowDate();
-				this.bind()
-//				console.log($serverData)
+						this.bind();
+	<!-- 			if(window.location.search.split("=")[1]=='0'){
+					console.log('调度')
+					this.bind();
+				}else{
+					console.log('历史调度')
+					this._historyDisplay()
+				} -->
 				},
 				bind: function() {
 					this._computeClick();
 					this._watchData();
-					this._saveClick()
+					this._saveClick();
+					this._computeDataRange()
 				},
+				_historyDisplay(){
+					var $formData = $('.formData');
+					var $rowone = $('.rowone');
+					var _this = this;
 				
+					for(var i=0;i<$formData.length;i++){
+					
+						if($formData[i].nodeName=="INPUT"||$formData[i].nodeName=="TEXTEREA"){
+//							$formData.eq(i).attr("disabled","disabled");
+							$formData.eq(i).attr({"disabled":"disabled","placeholder":""});
+							
+						}
+						 
+					}
+					$rowone.html('<td colspan="7"><div class="condition alignLeft"><div class="col lastchild"><label for="">日期：</label><input type="text" id="planTime" /></div><span id="searchTime" class="search">查询</span></div></td>')
+						//input 条件查询框
+					fatmmerTime($("#planTime"));
+					function fatmmerTime(ele){
+							ele.jcDate({	
+							IcoClass : "jcDateIco",
+							Event : "click",
+							Speed : 100,
+							Left : 0,
+							Top : 28,
+							format : "-",
+							Timeout : 100,
+						});
+					};
+					$("#planTime").css({'border':'1px solid #ccc','width':'75%'})
+						$("#searchTime").click(function(){
+							var planTime=$("#planTime").val();
+							selectScheduleExtByDate(planTime)
+							console.log(planTime)
+						})
+				},
+				_formDataChange(){
+					
+				},
 				_saveClick(){
 					var $save = $('#save')
 					var _this =this;
 					$save.on('click',function(){
 						console.log(_this.formData)
+						_this._saveScheduleExt(_this.formData)
+						
 					})
+				},
+				_saveScheduleExt(params){			
+			 	var _this = this;
+			 	params.idxDate = $('#nowTime').html();
+			 	var newParams = {}
+			 	for(var i in params){
+			 		if(params[i]!=''){
+			 			newParams[i] = params[i]
+			 		}
+			 	}
+				var asyncUrl = "/saveScheduleExt.htm";
+				$.ajax({
+					type: "POST",
+					url: asyncUrl,
+					contentType: 'application/json;charset=utf-8',
+					dataType: 'json',
+					//数据格式是json串
+					data: JSON.stringify(newParams),
+					success: function(res) {
+						console.log(res);
+						alert("保存成功！")
+					},
+					error: function(jqXHR) {
+						alert("发生错误：" + jqXHR.status);
+					}
+				});
+			
+				},
+				_computeDataRange(){
+					var $computeData = $('.computeData')
+					for(var i=0;i<$computeData.length-1;i++){
+						$computeData.eq(i).on('focusout',function(){
+							var value = parseInt(this.value)
+							if(this.className.split(' ')[1] == 'tyMinFlow'){
+								if(value>50||value<20){
+									alert("输入值需要在20到50之间");
+									this.value =20
+								}
+							}else if(this.className.split(' ')[1] == 'tyMaxFlow'){
+								if(value>100||value<60){
+									alert("s输入值需要在60到100之间");
+									this.value = 60
+								}
+							}
+						})
+					}
 				},
 				_computeClick(){
 					var $compute = $('#compute')
@@ -189,12 +378,16 @@
 					$compute.on('click',function(){
 						var bean = {};
                     	bean.recordDate = $("#nowTime").html();
+                    	
                     	for(var i=0;i<$computeData.length;i++){
                     		console.log($computeData[i].className.split(' ')[1])
-                    		if($computeData[i].value==''){
-                    			
+                    		if($computeData[i].value==''){	
                     		}else{
-                    			bean[$computeData[i].className.split(' ')[1]] = $computeData[i].value
+                    			var indexName =  $computeData[i].className.split(' ')[1].slice(2,3).toLowerCase()+$computeData[i].className.split(' ')[1].slice(3)
+                    			if(indexName == "waterYieldAdj" ){
+                    				indexName = "waterYieldPreAdj"
+                    			}
+                    			bean[indexName] = $computeData[i].value
                     		}
                     		
                     	}
@@ -202,7 +395,7 @@
 					})
        
 				},
-				_dealTime(end,start){
+				_dealTime(start,end){
 					var h=0,m=0; 
 					if(!start||!end){
 						return ''
@@ -218,14 +411,16 @@
 				_calculaData(){
 //					console.log(this.formData.szPreWaterKr,this.formData.szObjWaterKr,this.formData.szKrDifference);
 					this.formData.szKrDifference = (this.formData.szObjWaterKr-this.formData.szPreWaterKr).toFixed(2)
-	
-//					console.log(this.formData.ytPreWaterKr,this.formData.ytObjWaterKr,this.formData.ytKrDifference);
+					this.formData.dayPlanWater = ((this.formData.tyYesterdayWater-0)+(this.formData.szKrDifference-0))*(this.formData.damageByWater-0)
+					this.formData.dayPlanWater = this.formData.dayPlanWater.toFixed(2)
+					
 					this.formData.ytKrDifference = (this.formData.ytObjWaterKr - this.formData.ytPreWaterKr).toFixed(2)					
 //					console.log(this.formData.period1,this.formData.period2,this.formData.waterFlow1,this.formData.duration1,this.formData.waterYield1);
 					
-					this.formData.duration1 = this._dealTime(this.formData.period2,this.formData.period1)				
+					this.formData.duration1 = this._dealTime(this.formData.period1,this.formData.period2)				
 					if(this.formData.duration1!=''&&this.formData.waterFlow1!=''){
-						this.formData.waterYield1 = this.formData.duration1*this.formData.waterFlow1*0.36
+						this.formData.waterYield1 = (this.formData.duration1*this.formData.waterFlow1*0.36).toFixed(2)
+						
 					}					
 //					console.log(this.formData.period1,this.formData.period2,this.formData.waterFlow1,this.formData.duration1,this.formData.waterYield1);
 					
@@ -233,7 +428,7 @@
 				
 					this.formData.duration2 = this._dealTime(this.formData.period3,this.formData.period4)
 					if(this.formData.duration2!=''&&this.formData.waterFlow2!=''){
-						this.formData.waterYield2 = this.formData.duration2*this.formData.waterFlow2*0.36
+						this.formData.waterYield2 = (this.formData.duration2*this.formData.waterFlow2*0.36).toFixed(2)
 					}
 		
 //					console.log(this.formData.period3+"1a",this.formData.period4+"2a",this.formData.waterFlow2+"3a",this.formData.duration2+"4a",this.formData.waterYield2+"5a");
@@ -241,16 +436,18 @@
 				},
 				_watchData(){
 					var $watchData = $('.watchData');
+					var $formData = $('.formData')
 					var _this = this;
-					$watchData.on('blur',function(){
-//						console.log(_this);
-//						console.log(_this.formData)
-//						
-						_this._changeFormData($watchData)
-						_this._calculaData()
+					$formData.on('blur',function(){
+						_this._changeFormData($(this))
+						if(this.classList[2]=='watchData'){
+							_this._calculaData()
+						}
+
 						_this.init()
+//						console.log(Array.from($formData))
 					})
-					console.log($watchData)
+//					console.log($watchData)
 					
 				},
 				_changeFormData(changeData){
@@ -295,6 +492,7 @@
 				}
 			 },
 			 selectScheduleExtByDate(){
+			 	var _this = this;
 				var asyncUrl = "/selectScheduleExtByDate.htm";
 				$.ajax({
 					type: "GET",
@@ -307,9 +505,9 @@
 					},
 					success: function(res) {
 						console.log(res);
-						this.receiveData = res.data;
-						this.dealInittableDate();
-						this.randerServerData()
+						_this.receiveData = res.data;
+						_this.dealInittableDate();
+						_this.randerServerData()
 					},
 					error: function(jqXHR) {
 						alert("发生错误：" + jqXHR.status);
@@ -318,6 +516,8 @@
 			}
 				
 			}
+			
+
 			
 function insertAdj(bean){
     var insertAdjUrl = "/updateDayWater.htm"
@@ -471,6 +671,7 @@ function showWaiting() {
     img.setAttribute("src", "../../images/waiting.gif");
     document.getElementById("msgDiv").appendChild(img);
 }
+
 		</script>
 	</body>
 
