@@ -4,17 +4,17 @@
 	<head>
 		<meta charset="UTF-8">
 		<title>调度方案</title>
-		<link rel="stylesheet" type="text/css" href="../../css/common.css" />
-		<link rel="stylesheet" type="text/css" href="../../css/mystyle.css" />
-		<link rel="stylesheet" type="text/css" href="../../css/jcDate.css"/>
-		<link rel="stylesheet" href="newDiaodu.css" />
-		<script type="text/javascript" src="../../js/jquery-1.8.3.min.js"></script>
-		<script type="text/javascript" src="../../js/jQuery-jcDate.js"></script>
-		<script type="text/javascript" src="../../js/common.js"></script>
+		<link rel="stylesheet" type="text/css" href="css/common.css" />
+		<link rel="stylesheet" type="text/css" href="css/mystyle.css" />
+		<link rel="stylesheet" type="text/css" href="css/jcDate.css"/>
+		<link rel="stylesheet" type="text/css" href="css/newDiaodu.css" />
+		<script type="text/javascript" src="js/jquery-1.8.3.min.js"></script>
+		<script type="text/javascript" src="js/jQuery-jcDate.js"></script>
+		<script type="text/javascript" src="js/common.js"></script>
 	</head>
 
 	<body>
-		<div class="content-right">
+	
 			<div class="table-main plan-main">
 				<div id="content-table">
 		
@@ -23,7 +23,7 @@
 					
 				</div>
 			</div>
-		</div>
+		
 
 		<script>
 			
@@ -48,7 +48,7 @@
 						diaoduTable = new InitTable(res.data)
 					},
 					error: function(jqXHR) {
-						alert("发生错误：" + jqXHR.status);
+						//alert("发生错误：" + jqXHR.status);
 						var falseData = {"code":0,"description":"返回失败","status":0,"data":{"tyStime1":"11:00","tyStime2":"12:00","tyStime3":"17:00","tyStime4":"21:50","tyStime5":"00:00","tyStime6":"07:50","tyEtime1":"12:00","tyEtime2":"17:00","tyEtime3":"21:50","tyEtime4":"00:00","tyEtime5":"07:50","tyEtime6":"11:00","tyDuration1":1,"tyDuration2":5,"tyDuration3":4.83,"tyDuration4":2.17,"tyDuration5":7.83,"tyDuration6":3.17,"tyWaterSecond1":40,"tyWaterSecond2":40,"tyWaterSecond3":40,"tyWaterSecond4":96,"tyWaterSecond5":96,"tyWaterSecond6":40,"tyWaterPlan1":14,"tyWaterPlan2":72,"tyWaterPlan3":69,"tyWaterPlan4":74,"tyWaterPlan5":270,"tyWaterPlan6":45,"tyWaterYield":547,"tyWaterYieldPre":550.27,"tyYesterdayWater":546.33,"szPreWaterLevel":26.49,"ytPreWaterLevel":47.84,"szPreWaterKr":2852.14,"ytPreWaterKr":629.17}}
 						diaoduTable = new InitTable(falseData.data)
 					}
@@ -73,11 +73,11 @@
 						otheradata = new OtherTable(res.data)
 					},
 					error: function(jqXHR) {
-						alert("发生错误：" + jqXHR.status);
+						//alert("发生错误：" + jqXHR.status);
 						var res = {"code":0,"description":"查询成功","status":0,"data":[{"station":2,"period":"11:00-12:00","duration":1,"unitVolume":47,"volume":16},{"station":2,"period":"12:00-17:00","duration":5,"unitVolume":47,"volume":84},{"station":2,"period":"17:00-20:50","duration":3.84,"unitVolume":47,"volume":64},{"station":2,"period":"20:50-00:00","duration":3.16,"unitVolume":60,"volume":68},{"station":2,"period":"00:00-07:24","duration":7.4,"unitVolume":60,"volume":159},{"station":2,"period":"07:24-11:00","duration":3.6,"unitVolume":47,"volume":60},{"station":3,"period":"11:00-12:00","duration":1,"unitVolume":45,"volume":16},{"station":3,"period":"12:00-17:00","duration":5,"unitVolume":45,"volume":81},{"station":3,"period":"17:00-21:16","duration":4.28,"unitVolume":45,"volume":69},{"station":3,"period":"21:16-00:00","duration":2.72,"unitVolume":58,"volume":56},{"station":3,"period":"00:00-07:42","duration":7.71,"unitVolume":58,"volume":160},{"station":3,"period":"07:42-11:00","duration":3.29,"unitVolume":45,"volume":53},{"station":4,"period":"11:00-12:00","duration":1,"unitVolume":44,"volume":15},{"station":4,"period":"12:00-17:00","duration":5,"unitVolume":44,"volume":79},{"station":4,"period":"17:00-22:28","duration":5.47,"unitVolume":44,"volume":86},{"station":4,"period":"22:28-00:00","duration":1.53,"unitVolume":57,"volume":31},{"station":4,"period":"00:00-08:39","duration":8.65,"unitVolume":57,"volume":177},{"station":4,"period":"08:39-11:00","duration":2.35,"unitVolume":44,"volume":37}]}
 						otheradata = new OtherTable(res.data)
 					}
-				
+					
 				});
 			}
 			selectScheduleByDate();
@@ -264,15 +264,16 @@
 				this.$contentTable.html(this.$CONTENTHTML)
 				this._randerFormData();
 				this.randerServerData();
-				this.nowDate();
-						this.bind();
-	<!-- 			if(window.location.search.split("=")[1]=='0'){
+				this.nowDate();	
+				console.log('调度')
+				this.bind();
+				/*if(window.location.search.split("=")[1]=='0'){
 					console.log('调度')
 					this.bind();
 				}else{
 					console.log('历史调度')
 					this._historyDisplay()
-				} -->
+				}*/
 				},
 				bind: function() {
 					this._computeClick();
@@ -287,7 +288,7 @@
 				
 					for(var i=0;i<$formData.length;i++){
 					
-						if($formData[i].nodeName=="INPUT"||$formData[i].nodeName=="TEXTEREA"){
+						if($formData[i].nodeName=="INPUT"||$formData[i].nodeName=="TEXTAREA"){
 //							$formData.eq(i).attr("disabled","disabled");
 							$formData.eq(i).attr({"disabled":"disabled","placeholder":""});
 							
